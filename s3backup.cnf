@@ -1,0 +1,12 @@
+S3_BUCKET_NAME='bucket'
+S3_BACKUP_PATH='latest/project_name'
+S3_BACKUP_NAME='app_name'
+MYSQL_USER='root'
+MYSQL_PASSWORD='123'
+MYSQL_HOST='10.0.0.58'
+MYSQL_PORT='3306'
+MYSQL_SERVICE_CMD="service mysql start"
+LOCAL_DIR='/var/lib/mysql'
+AWS_REGION='s3-eu-west-1.amazonaws.com'
+AWS_ACCESS_KEY='abc'
+AWS_SECRET_KEY='123'
