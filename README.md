@@ -1,6 +1,6 @@
 # Modified s3backup to run under Docker
 
-Stream MySQL Backups to AWS S3 and then have AWS Lambda propagate the backup to fit the daily/weekly/monthly/yearly rotating model.  Outside of this project's scope, S3 lifecycle and replication can be used to control backup expirations and redundancy.
+Stream MySQL/MariaDB Backups to AWS S3 and then have AWS Lambda propagate the backup to fit the daily/weekly/monthly/yearly rotating model.  Outside of this project's scope, S3 lifecycle and replication can be used to control backup expirations and redundancy.
 
 This project is based on tanji/s3backup, but modified to allow AWS Lambda handle the backup rotation.  In other words, removed the date format YYYYMMDD from the code.
 
@@ -69,7 +69,7 @@ Command to start mysql, based on your distro.
 MYSQL_SERVICE_CMD="service mysql start"
 ```
 
-Directory used to restore the backup. If you are using *full-restore* set this to MySQL datadir otherwise set this to a temporal directory.
+Directory used to restore the backup. If you are using *full-restore* set this to MySQL datadir (e.g. /var/lib/mysql) otherwise set this to a temporal directory.
 
 ```
 LOCAL_DIR='/tmp/restore_db'
@@ -95,6 +95,22 @@ export AWS_SECRET_ACCESS_KEY='YOUR_AWS_SECRET_ACCESS_KEY'
 
 ## Usage
 
+Run the container
+
+```
+docker run -it --rm -v /etc/s3backup.cnf:/etc/s3backup.cnf  tristann9/db-backup s3backup <command>
+```
+
+Or to access the shell directly
+
+```
+docker run -it --rm -v /etc/s3backup.cnf:/etc/s3backup.cnf  tristann9/db-backup bash
+```
+
+Note: Use the docker command [--volumes-from database-container-id ] to map the MySQL/MariaDB volumes onto the s3backup container.
+
+ 
+
 Generate the AES256 key for backups encryption
 
 ```
@@ -107,7 +123,8 @@ Upload a full backup to S3 Bucket
 s3backup backup
 ```
 
-Prepare a full backup restore from S3 Bucket from desired date in format 'YYYYMMDD'. This will leave a restore ready to run *innobackupex --move-back DIR*
+
+Prepare a full backup restore from S3 Bucket.  If the backup path is specified then that file is downloaded else the latest backup is downloaded. This will leave a restore ready to run *innobackupex --move-back DIR*
 
 ```
 s3backup restore <backup-path> 
