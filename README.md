@@ -107,6 +107,12 @@ Or to access the shell directly
 docker run -it --rm -v /etc/s3backup.cnf:/etc/s3backup.cnf  tristann9/db-backup bash
 ```
 
+Or to restore a local file use:
+
+```
+docker run -it --rm -v ~/test/etc/s3backup.cnf:/etc/s3backup.cnf -v ~/test/etc/key:/root/.s3backup/key -v ~/test/restores:/tmp/restore_db -v ~/test/input:/input tristann9/db-backup s3backup local-restore /input database_file.xbcrypt
+```
+
 Note: Use the docker command [--volumes-from database-container-id ] to map the MySQL/MariaDB volumes onto the s3backup container.
 
  

@@ -327,6 +327,52 @@ case $CMD in
       echoinfo "Backup restore complete!."
     fi
     exit 0
+  	;;local-restore)
+       INPUT_PATH=$2
+       INPUT_FILE=$3
+        if [ -z "$2" ]
+        then
+                INPUT_PATH="/input"
+        fi
+        if [ -z "$3" ]
+        then
+                INPUT_FILE="backup.xbcrypt"
+        fi
+
+        EXPAND_FILE="$INPUT_PATH/$INPUT_FILE"
+
+        echoinfo "Expanding $EXPAND_FILE to ${LOCAL_DIR}"
+
+        xbstream -x -C ${LOCAL_DIR} < ${EXPAND_FILE}
+  	echoinfo "Decrypting backup files and removing *..xbcrypt."
+    cd "${LOCAL_DIR}" || echoerror "Faled to change directory to ${LOCAL_DIR}"
+    # shellcheck disable=SC2044
+    for i in $(find . -iname "*\.xbcrypt"); do
+      # shellcheck disable=SC2086
+      xbcrypt -d --encrypt-key-file="${KEYFILE}" --encrypt-algo=AES256 < "$i" > "$(dirname $i)"/"$(basename $i .xbcrypt)" && rm -f "$i";
+    done
+    if [ $? -ne 0 ]
+    then
+      echoerror "Error decrypting files. Please check ${LOCAL_DIR}"
+    fi
+    echoinfo "Decompressing backup files..."
+    cd "${LOCAL_DIR}" || echoerror "Faled to change directory to ${LOCAL_DIR}"
+    # shellcheck disable=SC2044
+    for bf in $(find . -iname "*\.qp"); do
+      # shellcheck disable=SC2086
+      ${QPRESS_CMD} -d "${bf}" "$(dirname ${bf})" && rm -f "${bf}";
+    done
+    if [ $? -ne 0 ]
+    then
+      echoerror "Error Uncompressing files. Please check ${LOCAL_DIR}"
+    fi
+  	${IBEX_CMD} --apply-log "${LOCAL_DIR}" 2>> ${LOGFILE}
+  	if [ $? -ne 0 ]
+  	then
+  		echoerror "Applying logs failed. Check ${LOGFILE} file for more information."
+  	fi
+
+    exit 0
   	;;
   help)
     usage
